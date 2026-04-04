@@ -128,8 +128,51 @@
 
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot, doc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5ONv6XowT3EJLE3Rsyq4INgCvC-4AhL0",
+    authDomain: "mhmdlysprjct.firebaseapp.com",
+    projectId: "mhmdlysprjct",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.fb = { collection, addDoc, onSnapshot, doc, updateDoc };
+</script>
+    
+    
     let databaseOperator = {}, dataUser = {}, batasDetik = 3900, filterText = '';
 
+  // 🔥 FIREBASE LOAD (TAMBAHAN)
+function loadDataFirebase(){
+  const q = fb.collection(db, "istirahat");
+
+  fb.onSnapshot(q, (snapshot) => {
+    dataUser = {};
+
+    snapshot.forEach(docSnap => {
+      const d = docSnap.data();
+
+      dataUser[d.opsId] = {
+        id: docSnap.id,
+        masuk: d.masuk ? new Date(d.masuk.seconds * 1000) : null,
+        selesai: d.selesai ? new Date(d.selesai.seconds * 1000) : null,
+        durasi: d.durasi || null,
+        sedangIstirahat: d.sedangIstirahat
+      };
+    });
+
+    updateRekapTable();
+  });
+}
+  
     function formatTime(d){ return d.toTimeString().slice(0,8); }
     function formatDurasi(s){ return [Math.floor(s/3600).toString().padStart(2,'0'), Math.floor((s%3600)/60).toString().padStart(2,'0'), (s%60).toString().padStart(2,'0')].join(':'); }
     function setNotification(msg){ const el = document.getElementById('notification'); el.textContent = msg||''; el.style.display = msg?'block':'none'; }
@@ -179,17 +222,30 @@
       if(e.key==='Enter'){ scanOpsID(this.value.trim()); this.value=''; this.focus(); }
     });
 
-    function scanOpsID(kodeRaw){
+    async function scanOpsID(kodeRaw){
       setNotification(''); if(!kodeRaw) return;
       const kodeAsli=window.databaseOperatorLower?kodeRaw.toLowerCase() in window.databaseOperatorLower ? window.databaseOperatorLower[kodeRaw.toLowerCase()]:undefined:undefined;
       if(!kodeAsli){ setNotification('OpsID tidak terdaftar!'); return; }
       const dataOps=databaseOperator[kodeAsli], now=new Date(), nama=dataOps.nama, contract=dataOps.contract;
       if(!dataUser[kodeAsli]){
-        dataUser[kodeAsli]={masuk:now,sedangIstirahat:true};
+        // 🔥 FIREBASE SAVE
+await fb.addDoc(fb.collection(db, "istirahat"), {
+  opsId: kodeAsli,
+  nama,
+  contract,
+  masuk: now,
+  sedangIstirahat: true
+});
         document.getElementById('status').innerHTML=`OpsID: ${kodeAsli}<br>Nama: ${nama}<br>Contract: ${contract}<br>Status: Istirahat<br>Mulai: ${formatTime(now)}`;
       } else if(dataUser[kodeAsli].sedangIstirahat){
         const masuk=dataUser[kodeAsli].masuk, durasi=Math.floor((now-masuk)/1000);
-        dataUser[kodeAsli].sedangIstirahat=false; dataUser[kodeAsli].selesai=now; dataUser[kodeAsli].durasi=durasi;
+
+  // 🔥 FIREBASE UPDATE
+await fb.updateDoc(fb.doc(db, "istirahat", dataUser[kodeAsli].id), {
+  selesai: now,
+  durasi: durasi,
+  sedangIstirahat: false
+});
         let html=`OpsID: ${kodeAsli}<br>Nama: ${nama}<br>Contract: ${contract}<br>Status: Masuk Kembali<br>Selesai: ${formatTime(now)}<br>Durasi: ${formatDurasi(durasi)}`;
         if(durasi>batasDetik){html+=`<div style="color:#a10000;margin-top:6px;">⚠️ Melebihi batas istirahat: ${formatDurasi(durasi-batasDetik)}</div>`; setNotification(`⚠️ OpsID ${kodeAsli} melebihi batas istirahat!`);} else setNotification('');
         document.getElementById('status').innerHTML=html;
@@ -208,6 +264,8 @@
         setNotification('Data operator yang sudah kembali telah direset.');
         document.getElementById('status').innerHTML='Status: Menunggu scan';
         updateRekapTable();
+  // 🔥 FIREBASE INIT
+loadDataFirebase();
       }
     });
 
