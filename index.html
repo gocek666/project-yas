@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Istirahat Operator Rancaekek 2 DC </title>
   <style>
+    /* Kode CSS kamu tetap sama */
     body {
       font-family: 'Segoe UI', Calibri, sans-serif;
       margin: 0;
@@ -11,32 +12,9 @@
       color: #f5f5f5;
       font-size: 16px;
     }
-    .header {
-      width: 100%;
-      background: linear-gradient(90deg, #1a1a1a, #333333);
-      padding: 20px 50px;
-      border-bottom: 2px solid #bfa64b;
-      font-size: 20px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: #f5d000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
-      box-sizing: border-box;
-    }
-    .header-right {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      padding-right: 50px; /* sama dengan padding header dan bawah */
-      box-sizing: border-box;
-    }
-    button {
-      padding: 10px 20px; font-size: 16px; border-radius: 10px; border: none;
-      cursor: pointer; font-weight: bold; transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.5); color: #fff;
-    }
+    .header { width: 100%; background: linear-gradient(90deg, #1a1a1a, #333333); padding: 20px 50px; border-bottom: 2px solid #bfa64b; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; color: #f5d000; box-shadow: 0 4px 10px rgba(0,0,0,0.7); box-sizing: border-box; }
+    .header-right { display: flex; gap: 15px; align-items: center; padding-right: 50px; box-sizing: border-box; }
+    button { padding: 10px 20px; font-size: 16px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.5); color: #fff; }
     button:focus { outline: 3px solid #f5d000; }
     #btnDownloadTemplate { background-color: #bfa64b; }
     #btnDownloadTemplate:hover { background-color: #e6c94d; }
@@ -53,28 +31,12 @@
     .container { display: flex; height: calc(100vh - 80px); }
     .left, .right { flex: 1; padding: 50px; display: flex; flex-direction: column; }
     .left { background: #1a1a1a; border-right: 2px solid #bfa64b; }
-    input[type=text] {
-      padding: 14px; width: 100%; border-radius: 10px; border: 1px solid #555;
-      background: #0d0d0d; color: #f5f5f5; font-size: 16px;
-    }
-    .notification {
-      margin-top: 15px; font-size: 15px; color: #ffd700;
-      min-height: 40px; white-space: pre-wrap; font-weight: bold;
-      background: #333; border-radius: 8px; padding: 10px 15px;
-      border: 1px solid #bfa64b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-    }
+    input[type=text] { padding: 14px; width: 100%; border-radius: 10px; border: 1px solid #555; background: #0d0d0d; color: #f5f5f5; font-size: 16px; }
+    .notification { margin-top: 15px; font-size: 15px; color: #ffd700; min-height: 40px; white-space: pre-wrap; font-weight: bold; background: #333; border-radius: 8px; padding: 10px 15px; border: 1px solid #bfa64b; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
     .status { margin-top: 25px; font-size: 16px; line-height: 1.8; }
-    .table-header-bar {
-      display: flex; justify-content: flex-end; align-items: center; gap: 12px;
-      margin-bottom: 10px;
-      padding-right: 50px; /* sama dengan padding kanan header */
-      box-sizing: border-box;
-    }
+    .table-header-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 10px; padding-right: 50px; box-sizing: border-box; }
     .table-header-bar input[type=text] { max-width: 250px; }
-    table {
-      width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 5px;
-      color: #f5f5f5; background: #1a1a1a;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 5px; color: #f5f5f5; background: #1a1a1a; }
     table, th, td { border: 1px solid #bfa64b; }
     th { padding: 10px; text-align: left; background: #333; color: #ffd700; }
     td { padding: 8px; text-align: left; background: #1a1a1a; }
@@ -128,12 +90,17 @@
 
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script>
-    let databaseOperator = {}, dataUser = {}, batasDetik = 3900, filterText = '';
+    // ======== DATA UTAMA =========
+    let databaseOperator = {};
+    let dataUser = JSON.parse(localStorage.getItem('dataUser')) || {}; // ambil dari Local Storage
+    let batasDetik = 3900, filterText = '';
 
+    // ======== UTILITY =========
     function formatTime(d){ return d.toTimeString().slice(0,8); }
     function formatDurasi(s){ return [Math.floor(s/3600).toString().padStart(2,'0'), Math.floor((s%3600)/60).toString().padStart(2,'0'), (s%60).toString().padStart(2,'0')].join(':'); }
     function setNotification(msg){ const el = document.getElementById('notification'); el.textContent = msg||''; el.style.display = msg?'block':'none'; }
 
+    // ======== RENDER TABEL =========
     function updateRekapTable(){
       const tbody = document.querySelector('#rekapTable tbody'); tbody.innerHTML='';
       const filter = filterText.trim().toLowerCase();
@@ -145,15 +112,21 @@
           <td>${info.nama}</td>
           <td>${info.contract}</td>
           <td>${user.sedangIstirahat?'Istirahat':'Kembali'}</td>
-          <td>${user.masuk?formatTime(user.masuk):''}</td>
-          <td>${user.selesai?formatTime(user.selesai):''}</td>
-          <td>${user.durasi?formatDurasi(user.durasi):''}</td>
+          <td>${user.masuk?formatTime(new Date(user.masuk)):""}</td>
+          <td>${user.selesai?formatTime(new Date(user.selesai)):""}</td>
+          <td>${user.durasi?formatDurasi(user.durasi):""}</td>
         </tr>`;
       }
     }
 
+    // ======== SIMPAN DATA KE LOCAL STORAGE ========
+    function saveDataUser(){
+      localStorage.setItem('dataUser', JSON.stringify(dataUser));
+    }
+
+    // ======== DOWNLOAD / TEMPLATE / IMPORT =========
     function downloadRekap(){
-      const arr=[]; for(const k in dataUser){const u=dataUser[k],i=databaseOperator[k]||{nama:'-',contract:'-'}; arr.push({OpsID:k,Nama:i.nama,Contract:i.contract,Status:u.sedangIstirahat?'Istirahat':'Kembali',Mulai:u.masuk?formatTime(u.masuk):'',Selesai:u.selesai?formatTime(u.selesai):'',Durasi:u.durasi?formatDurasi(u.durasi):''});}
+      const arr=[]; for(const k in dataUser){const u=dataUser[k],i=databaseOperator[k]||{nama:'-',contract:'-'}; arr.push({OpsID:k,Nama:i.nama,Contract:i.contract,Status:u.sedangIstirahat?'Istirahat':'Kembali',Mulai:u.masuk?formatTime(new Date(u.masuk)):'',Selesai:u.selesai?formatTime(new Date(u.selesai)):'',Durasi:u.durasi?formatDurasi(u.durasi):''});}
       const ws=XLSX.utils.json_to_sheet(arr), wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'RekapOperator'); XLSX.writeFile(wb,'RekapOperator.xlsx');
     }
     function downloadTemplate(){
@@ -169,7 +142,7 @@
       }; reader.readAsArrayBuffer(file);
     }
 
-    // Event Listener
+    // ======== EVENT LISTENERS =========
     document.getElementById('btnDownloadRekap').addEventListener('click', downloadRekap);
     document.getElementById('btnDownloadTemplate').addEventListener('click', downloadTemplate);
     document.getElementById('btnImportData').addEventListener('click', ()=>document.getElementById('importFileInput').click());
@@ -179,6 +152,7 @@
       if(e.key==='Enter'){ scanOpsID(this.value.trim()); this.value=''; this.focus(); }
     });
 
+    // ======== SCAN OPSID =========
     function scanOpsID(kodeRaw){
       setNotification(''); if(!kodeRaw) return;
       const kodeAsli=window.databaseOperatorLower?kodeRaw.toLowerCase() in window.databaseOperatorLower ? window.databaseOperatorLower[kodeRaw.toLowerCase()]:undefined:undefined;
@@ -194,9 +168,13 @@
         if(durasi>batasDetik){html+=`<div style="color:#a10000;margin-top:6px;">⚠️ Melebihi batas istirahat: ${formatDurasi(durasi-batasDetik)}</div>`; setNotification(`⚠️ OpsID ${kodeAsli} melebihi batas istirahat!`);} else setNotification('');
         document.getElementById('status').innerHTML=html;
       } else { const u=dataUser[kodeAsli]; if(u.selesai){ setNotification(`⚠️ Operator sudah beristirahat!\nOpsID: ${kodeAsli}\nNama: ${nama}\nContract: ${contract}\nJam Mulai: ${formatTime(u.masuk)}\nJam Selesai: ${formatTime(u.selesai)}\nDurasi: ${formatDurasi(u.durasi)}`); return;} else { dataUser[kodeAsli].masuk=now; dataUser[kodeAsli].sedangIstirahat=true; document.getElementById('status').innerHTML=`OpsID: ${kodeAsli}<br>Nama: ${nama}<br>Contract: ${contract}<br>Status: Istirahat<br>Mulai: ${formatTime(now)}`; } }
+
+      // Simpan setiap perubahan ke Local Storage
+      saveDataUser();
       updateRekapTable();
     }
 
+    // ======== SEARCH & FILTER =========
     const searchInput=document.getElementById('searchInput');
     const btnCari=document.getElementById('btnCari');
     btnCari.addEventListener('click', ()=>{ filterText=searchInput.value; updateRekapTable(); });
@@ -205,13 +183,13 @@
     document.getElementById('btnResetData').addEventListener('click',()=>{
       if(confirm('Yakin ingin menghapus data operator yang sudah kembali (status selesai istirahat)?')){
         for(const k in dataUser){ if(dataUser[k].sedangIstirahat===false){ delete dataUser[k]; } }
+        saveDataUser();
         setNotification('Data operator yang sudah kembali telah direset.');
         document.getElementById('status').innerHTML='Status: Menunggu scan';
         updateRekapTable();
       }
     });
 
-    // Tombol filter > 1 jam 10 menit
     document.getElementById('btnFilterOverBatas').addEventListener('click', ()=>{
       const batasDurasi = 4200; // 1 jam 10 menit
       const tbody = document.querySelector('#rekapTable tbody');
@@ -225,14 +203,14 @@
           <td>${info.nama}</td>
           <td>${info.contract}</td>
           <td>${user.sedangIstirahat?'Istirahat':'Kembali'}</td>
-          <td>${user.masuk?formatTime(user.masuk):''}</td>
-          <td>${user.selesai?formatTime(user.selesai):''}</td>
-          <td>${user.durasi?formatDurasi(user.durasi):''}</td>
+          <td>${user.masuk?formatTime(new Date(user.masuk)):""}</td>
+          <td>${user.selesai?formatTime(new Date(user.selesai)):""}</td>
+          <td>${user.durasi?formatDurasi(user.durasi):""}</td>
         </tr>`;
       }
     });
 
-    // Contoh data awal
+    // ======== DATA AWAL =========
     databaseOperator={"Ops286033":{nama:"Andrea Gian Renaldy",contract:"Dedicated Vendor - NEXUS"},"Ops1799286":{nama:"Ikhsan Maulana",contract:"DEDICATED NEK"}};
     window.databaseOperatorLower={}; Object.keys(databaseOperator).forEach(k=>window.databaseOperatorLower[k.toLowerCase()]=k);
     updateRekapTable();
