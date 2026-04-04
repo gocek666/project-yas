@@ -239,3 +239,39 @@
   </script>
 </body>
 </html>
+
+<script>
+  const webAppUrl = 'https://script.google.com/a/macros/spx-external.com/s/AKfycbwcE1osENKOKL0Wn7yy-BKHZ12cvW71JG1RIzKfiQagFXcYgu8kJcQ3x7F3Eaw1VeHR/execT'; // ganti dengan URL Web App kamu
+
+  // Ambil data dari Sheet (GET)
+  fetch(webAppUrl)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data); // cek di console
+      // update tabel HTML di sini, misal:
+      const tbody = document.querySelector('#rekapTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        tbody.innerHTML += `<tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+          <td>${row[3]}</td>
+          <td>${row[4]}</td>
+          <td>${row[5]}</td>
+          <td>${row[6]}</td>
+        </tr>`;
+      });
+    });
+
+  // Kirim data ke Sheet (POST)
+  function sendData(opsID, nama, contract, status, mulai, selesai, durasi) {
+    fetch('https://script.google.com/a/macros/spx-external.com/s/AKfycbwcE1osENKOKL0Wn7yy-BKHZ12cvW71JG1RIzKfiQagFXcYgu8kJcQ3x7F3Eaw1VeHR/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({OpsID: opsID, Nama: nama, Contract: contract, Status: status, Mulai: mulai, Selesai: selesai, Durasi: durasi})
+    })
+    .then(res => res.json())
+    .then(result => console.log(result));
+  }
+</script>
